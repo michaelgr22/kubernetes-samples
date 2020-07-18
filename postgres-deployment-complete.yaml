@@ -1,0 +1,73 @@
+kind: PersistentVolume
+apiVersion: v1
+metadata:
+  name: postgres-arduino-pv-volume
+  labels:
+    type: local
+    app: postgres-arduino
+spec:
+  storageClassName: manual
+  capacity:
+    storage: 10Gi
+  accessModes:
+    - ReadWriteMany
+  hostPath:
+    path: "/data/kubernetes/PersistentVolumes/postgres-arduino/postgres-arduino-pv-volume"
+---
+kind: PersistentVolumeClaim
+apiVersion: v1
+metadata:
+  name: postgres-arduino-pv-claim
+  labels:
+    app: postgres-arduino
+spec:
+  storageClassName: manual
+  accessModes:
+    - ReadWriteMany
+  resources:
+    requests:
+      storage: 10Gi
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: postgres-arduino
+  labels:
+    app: postgres-arduino
+spec:
+  type: NodePort
+  ports:
+   - port: 5432
+  selector:
+   app: postgres-arduino
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: postgres-arduino
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: postgres-arduino
+  template:
+    metadata:
+      labels:
+        app: postgres-arduino
+    spec:
+      containers:
+        - name: postgres
+          image: postgres:latest
+          imagePullPolicy: "IfNotPresent"
+          ports:
+            - containerPort: 5432
+          envFrom:
+            - configMapRef:
+                name: postgres-arduino-config
+          volumeMounts:
+            - mountPath: /var/lib/postgresql/data
+              name: postgresdb
+      volumes:
+        - name: postgresdb
+          persistentVolumeClaim:
+            claimName: postgres-arduino-pv-claim
