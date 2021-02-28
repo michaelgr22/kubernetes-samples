@@ -1,0 +1,29 @@
+kind: PersistentVolume
+apiVersion: v1
+metadata:
+  name: postgresarduino-pv-volume
+  labels:
+    type: local
+    app: postgresArduino
+spec:
+  storageClassName: manual
+  capacity:
+    storage: 10Gi
+  accessModes:
+    - ReadWriteMany
+  hostPath:
+    path: "/data/kubernetes/PersistentVolumes/postgresarduino/postgresArduino"
+---
+kind: PersistentVolumeClaim
+apiVersion: v1
+metadata:
+  name: postgresarduino-pv-claim
+  labels:
+    app: postgresArduino
+spec:
+  storageClassName: manual
+  accessModes:
+    - ReadWriteMany
+  resources:
+    requests:
+      storage: 10Gi

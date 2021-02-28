@@ -1,0 +1,8 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: cassandra-aktien-config
+  labels:
+    app: cassandra-aktien
+data:
+  CASSANDRA_START_RPC: "true"

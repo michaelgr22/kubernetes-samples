@@ -1,0 +1,74 @@
+kind: PersistentVolume
+apiVersion: v1
+metadata:
+  name: mongo-aktien-pv-volume
+  labels:
+    type: local
+    app: mongo-aktien
+spec:
+  storageClassName: manual
+  capacity:
+    storage: 10Gi
+  accessModes:
+    - ReadWriteMany
+  hostPath:
+    path: "/data/kubernetes/PersistentVolumes/mongo-aktien/mongo-aktien-pv-volume"
+---
+kind: PersistentVolumeClaim
+apiVersion: v1
+metadata:
+  name: mongo-aktien-pv-claim
+  labels:
+    app: mongo-aktien
+spec:
+  storageClassName: manual
+  accessModes:
+    - ReadWriteMany
+  resources:
+    requests:
+      storage: 10Gi
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: mongo-aktien
+  labels:
+    app: mongo-aktien
+spec:
+  type: NodePort
+  ports:
+   - port: 27017
+  selector:
+   app: mongo-aktien
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mongo-aktien
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: mongo-aktien
+  template:
+    metadata:
+      labels:
+        app: mongo-aktien
+    spec:
+      containers:
+        - name: mongo
+          image: mongo:latest
+          imagePullPolicy: "IfNotPresent"
+          ports:
+            - containerPort: 27017
+          envFrom:
+            - configMapRef:
+                name: mongo-aktien-config
+          volumeMounts:
+            - mountPath: /data/db
+              name: mongodb
+      volumes:
+        - name: mongodb
+          persistentVolumeClaim:
+            claimName: mongo-aktien-pv-claim
+

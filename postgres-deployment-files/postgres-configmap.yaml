@@ -1,0 +1,10 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: postgres-arduino-config
+  labels:
+    app: postgres-arduino
+data:
+  POSTGRES_DB: arduinodb
+  POSTGRES_USER: arduino
+  POSTGRES_PASSWORD: arduino_123

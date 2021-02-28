@@ -1,0 +1,18 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: python-aktien
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: python-aktien
+  template:
+    metadata:
+      labels:
+        app: python-aktien
+    spec:
+      containers:
+        - name: python-aktien
+          image: python-aktien:0.1
+          imagePullPolicy: Never

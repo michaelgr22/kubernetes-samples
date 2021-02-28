@@ -1,0 +1,74 @@
+kind: PersistentVolume
+apiVersion: v1
+metadata:
+  name: cassandra-aktien-pv-volume
+  labels:
+    type: local
+    app: cassandra-aktien
+spec:
+  storageClassName: manual
+  capacity:
+    storage: 10Gi
+  accessModes:
+    - ReadWriteMany
+  hostPath:
+    path: "/data/kubernetes/PersistentVolumes/cassandra-aktien/cassandra-aktien-pv-volume"
+---
+kind: PersistentVolumeClaim
+apiVersion: v1
+metadata:
+  name: cassandra-aktien-pv-claim
+  labels:
+    app: cassandra-aktien
+spec:
+  storageClassName: manual
+  accessModes:
+    - ReadWriteMany
+  resources:
+    requests:
+      storage: 10Gi
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: cassandra-aktien
+  labels:
+    app: cassandra-aktien
+spec:
+  type: NodePort
+  ports:
+   - port: 9042
+  selector:
+   app: cassandra-aktien
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: cassandra-aktien
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: cassandra-aktien
+  template:
+    metadata:
+      labels:
+        app: cassandra-aktien
+    spec:
+      containers:
+        - name: cassandra
+          image: cassandra:latest
+          imagePullPolicy: "IfNotPresent"
+          ports:
+            - containerPort: 9042
+          envFrom:
+            - configMapRef:
+                name: cassandra-aktien-config
+          volumeMounts:
+            - mountPath: /var/lib/cassandra
+              name: cassandradb
+      volumes:
+        - name: cassandradb
+          persistentVolumeClaim:
+            claimName: cassandra-aktien-pv-claim
+
